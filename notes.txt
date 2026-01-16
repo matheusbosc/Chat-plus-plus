@@ -1,0 +1,1 @@
+For CMakeLists.txt, use this website as a template: https://www.codegenes.net/blog/how-can-i-build-a-c-project-with-multiple-interdependent-subdirectories/
