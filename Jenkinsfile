@@ -7,7 +7,7 @@ pipeline {
                 sh 'rm -f ./bin/server'
                 sh 'rm -f ./lib/libcommon_lib.a'
                 sh 'rm -rf ./cmake-build-debug'
-                sh 'cmake \
+                sh '/opt/cmake/bin/cmake \
                       -S . \
                       -B cmake-build-debug \
                       -G Ninja \
@@ -18,19 +18,19 @@ pipeline {
 
         stage('Build Common Lib') {
             steps {
-                sh 'cmake --build ./cmake-build-debug --target common_lib -- -j $(nproc)'
+                sh '/opt/cmake/bin/cmake --build ./cmake-build-debug --target common_lib -- -j $(nproc)'
             }
         }
 
         stage('Build Client') {
               steps {
-                 sh 'cmake --build ./cmake-build-debug --target client -- -j $(nproc)'
+                 sh '/opt/cmake/bin/cmake --build ./cmake-build-debug --target client -- -j $(nproc)'
              }
         }
 
         stage('Build Server') {
               steps {
-                 sh 'cmake --build ./cmake-build-debug --target server -- -j $(nproc)'
+                 sh '/opt/cmake/bin/cmake --build ./cmake-build-debug --target server -- -j $(nproc)'
              }
         }
     }
