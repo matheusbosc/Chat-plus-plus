@@ -1,0 +1,5 @@
+- closing terminal that client is running on breaks client, requiring computer restart
+- server doesnt properly shutdown socket, so thread doesnt join.
+
+Todo:
+- remake server so it is more modular and more customizable.
