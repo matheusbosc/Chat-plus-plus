@@ -3,9 +3,9 @@ pipeline {
     stages {
         stage('Configure Build') {
             steps {
-                sh 'rm ./bin/client'
-                sh 'rm ./bin/server'
-                sh 'rm ./lib/libcommon_lib.a'
+                sh 'rm -f ./bin/client'
+                sh 'rm -f ./bin/server'
+                sh 'rm -f ./lib/libcommon_lib.a'
                 sh 'rm -rf ./cmake-build-debug'
                 sh 'cmake \
                       -S . \
