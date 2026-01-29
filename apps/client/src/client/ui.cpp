@@ -17,10 +17,8 @@
 using namespace ftxui;
 
 ChatUI::ChatUI(std::string prefsPath) : pref(prefsPath) {
-
     username = pref.GetString("username");
     ipAddress = pref.GetString("ip_address");
-
 }
 
 void ChatUI::push_message(const std::string &msg) {
@@ -225,7 +223,7 @@ void ChatUI::run() {
                                   Container::Horizontal({
                                       spacer | flex,
                                       Renderer([] {
-                                          return text("Made by Matheus Boscariol | Licensed under GNU AGPL 3.0");
+                                          return text("Made by Matheus Boscariol | Licensed under GNU AGPL 3.0 | matheusbosc.com");
                                       }),
                                       spacer | flex,
 
@@ -264,11 +262,7 @@ void ChatUI::run() {
 
                                               Renderer([] { return separator(); }),
 
-                                              spacer | size(HEIGHT, EQUAL, Dimension::Full().dimy * 0.025f),
-
                                               message_area | flex,
-
-                                              spacer | size(HEIGHT, EQUAL, Dimension::Full().dimy * 0.025f),
 
                                           }) | border | flex,
                                       }) | flex,
@@ -278,7 +272,7 @@ void ChatUI::run() {
                                           Renderer([] { return text("Message : "); }),
                                           input_message,
                                           Button("Send Message", [&] {
-                                              Send(msgInp);
+                                              if (msgInp != "") Send(msgInp);
                                               msgInp = "";
                                           }, ButtonOption::Ascii()),
                                       }) | border | xflex,
@@ -289,7 +283,7 @@ void ChatUI::run() {
                                   Container::Horizontal({
                                       spacer | flex,
                                       Renderer([] {
-                                          return text("Made by Matheus Boscariol | Licensed under GNU AGPL 3.0");
+                                          return text("Made by Matheus Boscariol | Licensed under GNU AGPL 3.0 | matheusbosc.com");
                                       }),
                                       spacer | flex,
 
