@@ -12,7 +12,7 @@ pipeline {
                       -B cmake-build-debug \
                       -G Ninja \
                       -DCMAKE_BUILD_TYPE=Debug \
-                      -CMAKE_EXPORT_COMPILE_COMMANDS=ON'
+                      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
             }
         }
 
