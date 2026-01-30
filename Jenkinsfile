@@ -43,8 +43,8 @@ pipeline {
 
         stage('Deliver') {
              steps {
-                 archiveArtifacts artifacts: './bin/client-linux', fingerprint: true
-                 archiveArtifacts artifacts: './bin/server-linux', fingerprint: true
+                 archiveArtifacts artifacts: 'bin/client-linux', fingerprint: true
+                 archiveArtifacts artifacts: 'bin/server-linux', fingerprint: true
              }
         }
     }
