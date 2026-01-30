@@ -9,5 +9,5 @@ target_include_directories(nlohmann
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 # Ensure the library uses the global C++ standard
-target_compile_features(nlohmann INTERFACE cxx_std_26)
+target_compile_features(nlohmann INTERFACE cxx_std_23)
 

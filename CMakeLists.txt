@@ -6,7 +6,7 @@ project(
         LANGUAGES CXX
 )
 
-# Set C++ standard (e.g., C++26)
+# Set C++ standard (e.g., C++23)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)  # Disable compiler-specific extensions

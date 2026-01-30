@@ -13,5 +13,5 @@ target_include_directories(common_lib
 )
 
 # Ensure the library uses the global C++ standard
-target_compile_features(common_lib PUBLIC cxx_std_17)
+target_compile_features(common_lib PUBLIC cxx_std_23)
 
