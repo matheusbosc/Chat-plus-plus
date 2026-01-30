@@ -33,6 +33,20 @@ pipeline {
                  sh '/opt/cmake/bin/cmake --build ./cmake-build-debug --target server -- -j $(nproc)'
              }
         }
+
+        stage('Final Touches') {
+              steps {
+                 sh 'mv ./bin/client ./bin/client-linux'
+                 sh 'mv ./bin/server ./bin/server-linux'
+             }
+        }
+
+        stage('Deliver') {
+             steps {
+                 archiveArtifacts artifacts: './bin/client-linux', fingerprint: true
+                 archiveArtifacts artifacts: './bin/server-linux', fingerprint: true
+             }
+        }
     }
 }
 
