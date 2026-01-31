@@ -10,7 +10,7 @@ pipeline {
                 sh "echo ${GITHUB_TOKEN} | docker login ghcr.io -u matheusbosc --password-stdin"
 
                 // Login to github cli tool
-                sh "gh auth login --with-token < ${GITHUB_TOKEN}"
+                sh "echo ${GITHUB_TOKEN} | gh auth login --with-token"
 
                 sh 'rm -f ./bin/client'
                 sh 'rm -f ./bin/server'
