@@ -59,6 +59,7 @@ pipeline {
         }
 
         stage('Github Release') {
+              steps {
                  sh "gh auth login --with-token < ${GITHUB_TOKEN}"
                  sh """
                     gh release create "v${BUILD_NUMBER}" \
@@ -66,6 +67,7 @@ pipeline {
                     --title "Build ${BUILD_NUMBER} \
                     --notes "Automated Jenkins releade for build #${BUILD_NUMBER}. Run the server with docker run -p 8080:8080 ghcr.io/matheusbosc/chat-plus-plus:latest"
                  """
+              }
         }
 
         stage('Deliver') {
