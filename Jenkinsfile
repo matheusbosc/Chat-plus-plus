@@ -6,6 +6,12 @@ pipeline {
     stages {
         stage('Configure Build') {
             steps {
+                // Login to GHCR
+                sh "echo ${GITHUB_TOKEN} | docker login ghcr.io -u matheusbosc --password-stdin"
+
+                // Login to github cli tool
+                sh "gh auth login --with-token < ${GITHUB_TOKEN}"
+
                 sh 'rm -f ./bin/client'
                 sh 'rm -f ./bin/server'
                 sh 'rm -f ./lib/libcommon_lib.a'
@@ -36,9 +42,6 @@ pipeline {
                  // Build C++ Program
                  sh '/opt/cmake/bin/cmake --build ./cmake-build-debug --target server -- -j $(nproc)'
 
-                 // Login to GHCR
-                 sh "echo ${GITHUB_TOKEN} | docker login ghcr.io -u matheusbosc --password-stdin"
-
                  // Build Docker Image
                  sh 'docker build -t ghcr.io/matheusbosc/chat-plus-plus:latest .'
 
@@ -60,7 +63,6 @@ pipeline {
 
         stage('Github Release') {
               steps {
-                 sh "gh auth login --with-token < ${GITHUB_TOKEN}"
                  sh """
                     gh release create "v${BUILD_NUMBER}" \
                     bin/client-linux bin/server-linux \
