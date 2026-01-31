@@ -15,7 +15,6 @@ pipeline {
                 sh 'rm -f ./bin/client'
                 sh 'rm -f ./bin/server'
                 sh 'rm -f ./lib/libcommon_lib.a'
-                sh 'rm -rf ./cmake-build-debug'
                 sh '/opt/cmake/bin/cmake \
                       -S . \
                       -B cmake-build-debug \
@@ -31,26 +30,26 @@ pipeline {
             }
         }
 
+        stage('Build Server') {
+                      steps {
+                         // Build C++ Program
+                         sh '/opt/cmake/bin/cmake --build ./cmake-build-debug --target server -- -j $(nproc)'
+
+                         // Build Docker Image
+                         sh 'docker build -t ghcr.io/matheusbosc/chat-plus-plus-server:latest .'
+
+                         // Tag Docker Image
+                         sh "docker tag ghcr.io/matheusbosc/chat-plus-plus-server:latest ghcr.io/matheusbosc/chat-plus-plus:${BUILD_NUMBER}"
+
+                         // Push Docker Image
+                         sh "docker push ghcr.io/matheusbosc/chat-plus-plus-server:${BUILD_NUMBER}"
+                         sh 'docker push ghcr.io/matheusbosc/chat-plus-plus-server:latest'
+                     }
+                }
+
         stage('Build Client') {
               steps {
                  sh '/opt/cmake/bin/cmake --build ./cmake-build-debug --target client -- -j $(nproc)'
-             }
-        }
-
-        stage('Build Server') {
-              steps {
-                 // Build C++ Program
-                 sh '/opt/cmake/bin/cmake --build ./cmake-build-debug --target server -- -j $(nproc)'
-
-                 // Build Docker Image
-                 sh 'docker build -t ghcr.io/matheusbosc/chat-plus-plus:latest .'
-
-                 // Tag Docker Image
-                 sh "docker tag ghcr.io/matheusbosc/chat-plus-plus:latest ghcr.io/matheusbosc/chat-plus-plus:${BUILD_NUMBER}"
-
-                 // Push Docker Image
-                 sh "docker push ghcr.io/matheusbosc/chat-plus-plus:${BUILD_NUMBER}"
-                 sh 'docker push ghcr.io/matheusbosc/chat-plus-plus:latest'
              }
         }
 
@@ -65,7 +64,7 @@ pipeline {
               steps {
                  sh """
                     gh release create "v${BUILD_NUMBER}" \
-                    bin/client-linux bin/server-linux \
+                    ./bin/client-linux ./bin/server-linux \
                     --title "Build ${BUILD_NUMBER} \
                     --notes "Automated Jenkins releade for build #${BUILD_NUMBER}. Run the server with docker run -p 8080:8080 ghcr.io/matheusbosc/chat-plus-plus:latest"
                  """
