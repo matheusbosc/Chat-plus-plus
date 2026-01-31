@@ -65,11 +65,12 @@ pipeline {
                  sh 'ls'
                  sh 'ls bin'
                  sh 'cd bin'
+                 sh 'ls'
                  sh """
                     gh release create "v${BUILD_NUMBER}" \
-                    client-linux server-linux \
+                    ${WORKSPACE}/bin/client-linux ${WORKSPACE}/bin/server-linux \
                     --title "Build ${BUILD_NUMBER} \
-                    --notes "Automated Jenkins releade for build #${BUILD_NUMBER}. Run the server with docker run -p 8080:8080 ghcr.io/matheusbosc/chat-plus-plus:latest"
+                    --notes "Automated Jenkins release for build #${BUILD_NUMBER}. Run the server with docker run -p 8080:8080 ghcr.io/matheusbosc/chat-plus-plus:latest"
                  """
               }
         }
