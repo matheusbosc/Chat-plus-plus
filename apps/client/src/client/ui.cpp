@@ -43,7 +43,7 @@ void ChatUI::push_message(const std::string &msg) {
     messages.insert(messages.begin(), formattedMsg);
 }
 
-void ChatUI::PrepareConnection(std::string &tempPort, ScreenInteractive &screen) {
+void ChatUI::PrepareConnection(std::string &tempPort) {
     if (username.empty()) {
         return;
     }
@@ -83,17 +83,18 @@ void ChatUI::PrepareConnection(std::string &tempPort, ScreenInteractive &screen)
     state = UIState::Chat;
 
     // Restart UI to switch tabs
-    screen.ExitLoopClosure()();
-    run();
+    //uiScreen.ExitLoopClosure()();
+    //run();
+    selectedTab = 1;
 }
 
-void ChatUI::Quit(ScreenInteractive &screen) {
+void ChatUI::Quit() {
     if (on_quit) {
-        on_quit(screen);
+        on_quit();
     }
 }
 
-void ChatUI::Disconnect(ftxui::ScreenInteractive &screen) {
+void ChatUI::Disconnect() {
     if (on_disconnect) {
         on_disconnect();
     }
@@ -104,8 +105,10 @@ void ChatUI::Disconnect(ftxui::ScreenInteractive &screen) {
     port = NULL;
 
     state = UIState::Join;
-    screen.ExitLoopClosure()();
-    run();
+    //uiScreen.ExitLoopClosure()();
+    //run();
+
+    selectedTab = 0;
 }
 
 void ChatUI::Send(std::string &msg) {
@@ -117,9 +120,7 @@ void ChatUI::Send(std::string &msg) {
 }
 
 void ChatUI::run() {
-    ScreenInteractive screen = ScreenInteractive::Fullscreen();
-
-    //uiScreen = &screen;
+    //ScreenInteractive screen = ScreenInteractive::Fullscreen();
 
     std::string tempPort;
     std::string msgInp;
@@ -145,16 +146,12 @@ void ChatUI::run() {
         return paragraph(all_messages);
     });
 
-    Component container = state == UIState::Join
-                              ?
-
-                              // Connect Page
-                              Container::Vertical({
+    auto connect_page = Container::Vertical({
 
                                   // Header
                                   Container::Horizontal({
                                       spacer | flex,
-                                      Button("Quit", [&] { Quit(screen); }, ButtonOption::Ascii())
+                                      Button("Quit", [&] { Quit(); }, ButtonOption::Ascii())
                                   }) | border,
 
                                   // Content
@@ -205,7 +202,7 @@ void ChatUI::run() {
                                               // Connect Button
                                               Container::Horizontal({
                                                   spacer | flex,
-                                                  Button("Connect", [&] { PrepareConnection(tempPort, screen); },
+                                                  Button("Connect", [&] { PrepareConnection(tempPort); },
                                                          ButtonOption::Ascii()),
                                                   spacer | flex,
                                               }),
@@ -228,12 +225,9 @@ void ChatUI::run() {
                                       spacer | flex,
 
                                   }) | border,
-                              }) | flex
+                              });
 
-                              :
-
-                              // Chat Page
-                              Container::Vertical({
+    auto chat_page = Container::Vertical({
 
                                   // Header
                                   Container::Horizontal({
@@ -244,8 +238,8 @@ void ChatUI::run() {
                                       spacer | flex,
                                       Renderer([&] { return text("Room: " + room); }),
                                       spacer | flex,
-                                      Button("Disconnect", [&] { Disconnect(screen); }, ButtonOption::Ascii()),
-                                      Button("Quit", [&] { Quit(screen); }, ButtonOption::Ascii()),
+                                      Button("Disconnect", [&] { Disconnect(); }, ButtonOption::Ascii()),
+                                      Button("Quit", [&] { Quit(); }, ButtonOption::Ascii()),
                                   }) | border,
 
                                   // Content
@@ -288,10 +282,22 @@ void ChatUI::run() {
                                       spacer | flex,
 
                                   }) | border,
-                              }) | flex;
+                              });
+
+    /*Component container;
+
+    if (state == UIState::Chat) {
+        container = chat_page | flex;
+    } else if (state == UIState::Join) {
+        container = connect_page | flex;
+    }*/
+
+    Component root = Container::Tab(
+        { connect_page, chat_page },
+        &selectedTab
+    );
 
 
-    screen.Loop(container);
-
-    //uiScreen = nullptr;
+    uiScreen.Loop(root);
 }
+

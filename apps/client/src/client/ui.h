@@ -19,7 +19,7 @@ enum class UIState { Join, Chat };
 class ChatUI {
 public:
     using JoinCallback = std::function<void(const std::string&, const std::string&, const std::string&, const uint16_t&)>;
-    using QuitCallback = std::function<void(ftxui::ScreenInteractive&)>;
+    using QuitCallback = std::function<void()>;
     using SendCallback = std::function<void(const std::string&)>;
     using DisconnectCallback = std::function<void()>;
 
@@ -33,6 +33,8 @@ public:
     void run();
 
     ChatUI(std::string prefsPath);
+
+    ftxui::ScreenInteractive uiScreen = ftxui::ScreenInteractive::Fullscreen();
 
 private:
     UIState state = UIState::Join;
@@ -51,11 +53,12 @@ private:
     std::vector<std::string> messages;
     std::string chat_input;
 
-    ftxui::ScreenInteractive* uiScreen;
+    int selectedTab = 0;
 
-    void PrepareConnection(std::string& tempPort, ftxui::ScreenInteractive& screen);
-    void Quit(ftxui::ScreenInteractive& screen);
-    void Disconnect(ftxui::ScreenInteractive& screen);
+
+    void PrepareConnection(std::string& tempPort);
+    void Quit();
+    void Disconnect();
     void Send(std::string& msg);
 
     common_lib::Preferences pref;

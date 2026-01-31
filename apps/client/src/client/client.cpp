@@ -47,8 +47,12 @@ int Client::connect_client(const std::string &ipAddr, uint16_t port) {
 
     clientSocket = socket(AF_INET, SOCK_STREAM, 0); // Defines the socket that the server connects to
 
-    connect(clientSocket, (struct sockaddr *) &_serverAddress,
-            sizeof(_serverAddress)); // Connects to the server
+    if (connect(clientSocket, (struct sockaddr *) &_serverAddress,
+            sizeof(_serverAddress)) == -1) {
+        shutdown(clientSocket, SHUT_RDWR);
+        close(clientSocket);
+        return -1;
+    }
 
     send_raw(join_msg);
 

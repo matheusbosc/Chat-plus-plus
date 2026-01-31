@@ -24,6 +24,14 @@ I chose this because it not only gave me lots of features to try and learn, but 
 
 I also chose this project because it is cool, and a great addition to a resume!
 
+<br>
+<br>
+
+> ### Notes:
+> To run the docker container, execute in the terminal: 
+>
+> `$ docker run -p 8080:8080 ghcr.io/matheusbosc/chat-plus-plus:latest`
+
 ---
 Licensed under the [GNU AGPL license](https://github.com/matheusbosc/Chat-plus-plus?tab=AGPL-3.0-1-ov-file).
 

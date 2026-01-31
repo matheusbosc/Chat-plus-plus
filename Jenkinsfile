@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+        GITHUB_TOKEN = credentials('github-token')
+    }
     stages {
         stage('Configure Build') {
             steps {
@@ -30,15 +33,39 @@ pipeline {
 
         stage('Build Server') {
               steps {
+                 // Build C++ Program
                  sh '/opt/cmake/bin/cmake --build ./cmake-build-debug --target server -- -j $(nproc)'
+
+                 // Login to GHCR
+                 sh "echo ${GITHUB_TOKEN} | docker login ghcr.io -u matheusbosc --password-stdin"
+
+                 // Build Docker Image
+                 sh 'docker build -t ghcr.io/matheusbosc/chat-plus-plus:latest .'
+
+                 // Tag Docker Image
+                 sh "docker tag ghcr.io/matheusbosc/chat-plus-plus:latest ghcr.io/matheusbosc/chat-plus-plus:${BUILD_NUMBER}"
+
+                 // Push Docker Image
+                 sh "docker push ghcr.io/matheusbosc/chat-plus-plus:${BUILD_NUMBER}"
+                 sh 'docker push ghcr.io/matheusbosc/chat-plus-plus:latest'
              }
         }
 
-        stage('Final Touches') {
+        stage('Rename Files') {
               steps {
                  sh 'mv ./bin/client ./bin/client-linux'
                  sh 'mv ./bin/server ./bin/server-linux'
              }
+        }
+
+        stage('Github Release') {
+                 sh "gh auth login --with-token < ${GITHUB_TOKEN}"
+                 sh """
+                    gh release create "v${BUILD_NUMBER}" \
+                    bin/client-linux bin/server-linux \
+                    --title "Build ${BUILD_NUMBER} \
+                    --notes "Automated Jenkins releade for build #${BUILD_NUMBER}. Run the server with docker run -p 8080:8080 ghcr.io/matheusbosc/chat-plus-plus:latest"
+                 """
         }
 
         stage('Deliver') {

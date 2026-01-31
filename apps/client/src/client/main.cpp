@@ -21,8 +21,16 @@ int main() {
     // Set Join Callback: Init, connect, and start listener
     ui.set_join_callback([&](const std::string& username, const std::string& room, const std::string& ip, const uint16_t& port) {
         client.Init(username, room);
-        client.connect_client(ip, port);
-        client.start_listener();
+        if (client.connect_client(ip, port) == 0)
+            client.start_listener();
+        else {
+
+            auto formattedMsg = common_lib::message("Failed to Connect", "CLIENT", "", -1, "ERROR");
+            std::string jsonMsg = JS::serializeStruct(formattedMsg);
+            const char *msg = jsonMsg.c_str();
+
+            ui.push_message(msg);
+        }
     });
 
     // Set Send Callback: Send message
@@ -36,12 +44,12 @@ int main() {
     });
 
     // Set quit callback: stop listener, Disconnect, stop UI
-    ui.set_quit_callback([&](ftxui::ScreenInteractive& screen) {
+    ui.set_quit_callback([&]() {
         std::thread([&] {
             client.disconnect_client();
         }).detach();
 
-        screen.ExitLoopClosure()();
+        ui.uiScreen.ExitLoopClosure()();
     });
 
     // Set disconnect callback: stop listener, Disconnect
