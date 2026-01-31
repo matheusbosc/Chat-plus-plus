@@ -39,7 +39,7 @@ pipeline {
                          sh 'docker build -t ghcr.io/matheusbosc/chat-plus-plus-server:latest .'
 
                          // Tag Docker Image
-                         sh "docker tag ghcr.io/matheusbosc/chat-plus-plus-server:latest ghcr.io/matheusbosc/chat-plus-plus:${BUILD_NUMBER}"
+                         sh "docker tag ghcr.io/matheusbosc/chat-plus-plus-server:latest ghcr.io/matheusbosc/chat-plus-plus-server:${BUILD_NUMBER}"
 
                          // Push Docker Image
                          sh "docker push ghcr.io/matheusbosc/chat-plus-plus-server:${BUILD_NUMBER}"
