@@ -62,9 +62,12 @@ pipeline {
 
         stage('Github Release') {
               steps {
+                 sh 'ls'
+                 sh 'ls bin'
+                 sh 'cd bin'
                  sh """
                     gh release create "v${BUILD_NUMBER}" \
-                    ./bin/client-linux ./bin/server-linux \
+                    client-linux server-linux \
                     --title "Build ${BUILD_NUMBER} \
                     --notes "Automated Jenkins releade for build #${BUILD_NUMBER}. Run the server with docker run -p 8080:8080 ghcr.io/matheusbosc/chat-plus-plus:latest"
                  """
