@@ -68,8 +68,8 @@ pipeline {
                  sh 'ls'
                  sh """
                     gh release create "v${BUILD_NUMBER}" \
-                    /var/lib/jenkins/jobs/Chat++\ Linux/workspace/bin/client-linux /var/lib/jenkins/jobs/Chat++\ Linux/workspace/bin/server-linux \
-                    --title Build\ "${BUILD_NUMBER}" --notes Automated\ Jenkins\ release
+                    "/var/lib/jenkins/jobs/Chat++ Linux/workspace/bin/client-linux" "/var/lib/jenkins/jobs/Chat++ Linux/workspace/bin/server-linux" \
+                    --title "Build ${BUILD_NUMBER}" --notes "Automated Jenkins release"
                  """
               }
         }
