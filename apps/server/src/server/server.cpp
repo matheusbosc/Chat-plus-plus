@@ -13,16 +13,51 @@
 #include <vector>
 #include <common_lib/common_lib.h>
 #include <json_struct/json_struct.h>
+#include "server.h"
 
+
+void Server::Init() {
+
+}
+
+int Server::start_server(uint16_t port) {
+    int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+
+    // specifying the address
+    sockaddr_in serverAddress;
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_port = htons(port);
+    serverAddress.sin_addr.s_addr = INADDR_ANY;
+
+    // binding socket.
+    bind(serverSocket, (struct sockaddr*)&serverAddress,
+         sizeof(serverAddress));
+
+    // listening to the assigned socket
+    listen(serverSocket, 5);
+}
+
+void Server::start_server_listener() {
+    serverListenerRunning = true;
+    pthread_create(&serverListenerThread, nullptr, &Server::server_listener_entry, this);
+    serverListenerCreated = true;
+}
+
+void Server::server_listener_loop() {
+    while (true) {
+        // accepting connection request
+        int clientSocket
+            = accept(serverSocket, nullptr, nullptr);
+
+        clients.emplace_back("client", clientSocket);
+        clients.back().clientThread = pthread_create(ClientActions, clientSocket, std::ref(clients.back()), std::ref(clients));
+    }
+}
+
+
+// OLD STUFF
 
 using namespace std;
-
-struct client {
-    string clientName;
-    int clientSocket;
-    string room;
-    thread clientThread;
-};
 
 void ClientActions(int clientSocket, client &this_client, vector<client> &clients) {
 
