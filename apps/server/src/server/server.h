@@ -15,19 +15,21 @@ struct client {
     std::string clientName;
     int clientSocket;
     std::string room;
-    std::thread clientThread;
+    pthread_t clientThread;
+    bool threadRunning{false};
+    bool threadCreated{false};
 };
 
 class Server {
 public:
-    void Init();
+    void Init(bool _uiActive = true);
 
     int start_server(uint16_t port);
     void stop_server();
 
     void start_server_listener();
+    void stop_server_listener();
 
-    void start_client_listener();
     void stop_client_listener();
 
     ~Server();
@@ -45,6 +47,14 @@ private:
         self->server_listener_loop();
         return nullptr;
     }
+
+    static void* client_listener_entry(void* arg) {
+        Server* self = static_cast<Server*>(arg);
+        self->client_listener(self->clients.back(), self->clients);
+        return nullptr;
+    }
+
+    bool uiActive = true;
 
 
     // internal helpers

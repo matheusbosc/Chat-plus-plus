@@ -16,12 +16,13 @@
 #include "server.h"
 
 
-void Server::Init() {
-
+void Server::Init(bool _uiActive) {
+    uiActive = _uiActive;
 }
 
-int Server::start_server(uint16_t port) {
-    int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+int Server::start_server(unsigned short int port) {
+    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    std::cout << serverSocket << std::endl;
 
     // specifying the address
     sockaddr_in serverAddress;
@@ -29,12 +30,18 @@ int Server::start_server(uint16_t port) {
     serverAddress.sin_port = htons(port);
     serverAddress.sin_addr.s_addr = INADDR_ANY;
 
+
+
     // binding socket.
-    bind(serverSocket, (struct sockaddr*)&serverAddress,
-         sizeof(serverAddress));
+    if (bind(serverSocket, (struct sockaddr*)&serverAddress,
+         sizeof(serverAddress)) < 0) {
+        std::cout << "Failed to bind to port " << port << std::endl;
+    }
 
     // listening to the assigned socket
     listen(serverSocket, 5);
+
+    return 0;
 }
 
 void Server::start_server_listener() {
@@ -50,23 +57,43 @@ void Server::server_listener_loop() {
             = accept(serverSocket, nullptr, nullptr);
 
         clients.emplace_back("client", clientSocket);
-        clients.back().clientThread = pthread_create(ClientActions, clientSocket, std::ref(clients.back()), std::ref(clients));
+        client* c = &clients.back();
+        c->threadCreated = true;
+        c->threadRunning = true;
+        pthread_create(&clients.back().clientThread, nullptr, &Server::client_listener_entry, this);
     }
 }
 
+void Server::stop_client_listener() {
 
-// OLD STUFF
+    for (client c: clients) {
 
-using namespace std;
+        shutdown(c.clientSocket, SHUT_RDWR);
+        close(c.clientSocket);
 
-void ClientActions(int clientSocket, client &this_client, vector<client> &clients) {
+        c.threadRunning = false;
+        pthread_join(c.clientThread, nullptr);
+        c.threadCreated = false;
+    }
 
-    // START RECEIVE MESSAGES
+}
 
+void Server::stop_server_listener() {
+    shutdown(serverSocket, SHUT_RDWR);
+    close(serverSocket);
+
+    serverListenerRunning = false;
+
+    pthread_join(serverListenerThread, nullptr);
+
+    serverListenerCreated = false;
+}
+
+void Server::client_listener(client &this_client, std::vector<client> &clients) {
     while (true) {
         // receiving data
         char buffer[1024] = { 0 };
-        ssize_t bytes = recv(clientSocket, buffer, sizeof(buffer), 0);
+        ssize_t bytes = recv(this_client.clientSocket, buffer, sizeof(buffer), 0);
         if (bytes == 0) {
             return;
         }
@@ -79,31 +106,31 @@ void ClientActions(int clientSocket, client &this_client, vector<client> &client
         context.parseTo(obj);
 
         if (obj.type == "communication") {
-            cout << "ROOM " << obj.room_code << ": " << "COMMUNICATION MESSAGE: " << obj.author << ": " << obj.content
-                  << endl;
+            std::cout << "ROOM " << obj.room_code << ": " << "COMMUNICATION MESSAGE: " << obj.author << ": " << obj.content
+                  << std::endl;
         }else if (obj.type == "server_action") {
-            cout << "ROOM " << obj.room_code << ": " << "SERVER ACTION: " << obj.author << ": " << obj.content
-                  << endl;
+            std::cout << "ROOM " << obj.room_code << ": " << "SERVER ACTION: " << obj.author << ": " << obj.content
+                  << std::endl;
         } else if (obj.type == "error") {
-            cout << "ROOM " << obj.room_code << ": " << "ERROR: " << ": " << obj.author << ": " << obj.content
-                  << endl;
+            std::cout << "ROOM " << obj.room_code << ": " << "ERROR: " << ": " << obj.author << ": " << obj.content
+                  << std::endl;
         } else {
-            cout << "ROOM " << obj.room_code << ": " << "OTHER MESSAGE: " << ": " << obj.author << ": " << obj.content
-                  << endl;
+            std::cout << "ROOM " << obj.room_code << ": " << "OTHER MESSAGE: " << ": " << obj.author << ": " << obj.content
+                  << std::endl;
         }
 
         this_client.room = obj.room_code;
 
         common_lib::message returnmsg = common_lib::message(obj.content, obj.author, obj.room_code, (obj.type == "server_action") ? 201 : 200, "server_response");
 
-        string json_chat_msg = JS::serializeStruct(returnmsg);
+        std::string json_chat_msg = JS::serializeStruct(returnmsg);
 
         // sending data
         const char* json_returnmsg = json_chat_msg.c_str();
 
         for (int i = 0; i < clients.size(); i++) {
 
-            if (obj.content == "Disconnected" && clients[i].clientSocket == clientSocket) continue;
+            if (obj.content == "Disconnected" && clients[i].clientSocket == this_client.clientSocket) continue;
 
             if (clients[i].room != this_client.room) continue;
 
@@ -111,63 +138,12 @@ void ClientActions(int clientSocket, client &this_client, vector<client> &client
         }
 
     }
-
-    // END RECEIVE MESSAGES
 }
 
-void TerminateProgram(vector<client> &clients, int &serverSocket) {
-    for (client &c : clients) {
-        c.clientThread.join();
-    }
-
-    close(serverSocket);
+void Server::stop_server() {
+    stop_client_listener();
+    stop_server_listener();
 }
 
-int main()
-{
-    // creating socket
-    int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-
-    // specifying the address
-    sockaddr_in serverAddress;
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(8080);
-    serverAddress.sin_addr.s_addr = INADDR_ANY;
-
-    // binding socket.
-    bind(serverSocket, (struct sockaddr*)&serverAddress,
-         sizeof(serverAddress));
-
-    // listening to the assigned socket
-    listen(serverSocket, 5);
-
-    vector<client> clients;
-
-    try {
-
-        auto throwFunction = [](int e) {
-            throw e;
-        };
-
-        signal(SIGINT, throwFunction);
-
-        while (true) {
-            // accepting connection request
-            int clientSocket
-                = accept(serverSocket, nullptr, nullptr);
-
-            clients.emplace_back("client", clientSocket);
-            clients.back().clientThread = std::thread(ClientActions, clientSocket, std::ref(clients.back()), std::ref(clients));
-        }
-
-    } catch (int e) {
-        // closing the socket.
-
-        TerminateProgram(clients, serverSocket);
-        return e;
-    }
-
-    TerminateProgram(clients, serverSocket);
-    return 0;
+Server::~Server() {
 }
-
