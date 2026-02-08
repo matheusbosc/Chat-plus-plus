@@ -22,7 +22,7 @@ void Server::Init(bool _uiActive) {
 
 int Server::start_server(unsigned short int port) {
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-    std::cout << serverSocket << std::endl;
+    //std::cout << serverSocket << std::endl;
 
     // specifying the address
     sockaddr_in serverAddress;
@@ -104,37 +104,57 @@ void Server::client_listener(client &this_client, std::vector<client> &clients) 
         JS::ParseContext context(buffer);
         common_lib::message obj;
         context.parseTo(obj);
+        this_client.room = obj.room_code;
 
-        if (obj.type == "communication") {
-            std::cout << "ROOM " << obj.room_code << ": " << "COMMUNICATION MESSAGE: " << obj.author << ": " << obj.content
-                  << std::endl;
-        }else if (obj.type == "server_action") {
+        common_lib::message returnmsg;
+        int returnMsgCode;
+
+        // Check if the message contains a default pattern:
+        if (obj.type == "server_action") {
             std::cout << "ROOM " << obj.room_code << ": " << "SERVER ACTION: " << obj.author << ": " << obj.content
                   << std::endl;
+
+            returnmsg = common_lib::message(obj.content, "SERVER", obj.room_code, 201, "server_response");
+
+            returnMsgCode = 0;
         } else if (obj.type == "error") {
             std::cout << "ROOM " << obj.room_code << ": " << "ERROR: " << ": " << obj.author << ": " << obj.content
                   << std::endl;
-        } else {
-            std::cout << "ROOM " << obj.room_code << ": " << "OTHER MESSAGE: " << ": " << obj.author << ": " << obj.content
-                  << std::endl;
+
+            returnmsg = common_lib::message(obj.content, "ERROR", obj.room_code, 400, "server_response");
+
+            returnMsgCode = -1;
         }
 
-        this_client.room = obj.room_code;
+        // Specific Patterns
+        
 
-        common_lib::message returnmsg = common_lib::message(obj.content, obj.author, obj.room_code, (obj.type == "server_action") ? 201 : 200, "server_response");
+        // If none of the patterns above apply, then return the message
+        else {
+            std::cout << "ROOM " << obj.room_code << ": " << "OTHER MESSAGE: " << obj.author << ": " << obj.content
+                  << std::endl;
+
+            returnmsg = common_lib::message(obj.content, obj.author, obj.room_code, 200, "server_response");
+
+            returnMsgCode = 0;
+        }
 
         std::string json_chat_msg = JS::serializeStruct(returnmsg);
 
         // sending data
         const char* json_returnmsg = json_chat_msg.c_str();
 
-        for (int i = 0; i < clients.size(); i++) {
+        if (returnMsgCode == 0) {
+            for (int i = 0; i < clients.size(); i++) {
 
-            if (obj.content == "Disconnected" && clients[i].clientSocket == this_client.clientSocket) continue;
+                if (obj.content == "Disconnected" && clients[i].clientSocket == this_client.clientSocket) continue;
 
-            if (clients[i].room != this_client.room) continue;
+                if (clients[i].room != this_client.room) continue;
 
-            send(clients[i].clientSocket, json_returnmsg, strlen(json_returnmsg), 0);
+                send(clients[i].clientSocket, json_returnmsg, strlen(json_returnmsg), 0);
+            }
+        } else {
+            send(this_client.clientSocket, json_returnmsg, strlen(json_returnmsg), 0);
         }
 
     }

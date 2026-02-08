@@ -32,6 +32,8 @@ public:
 
     void stop_client_listener();
 
+    void load_plugin();
+
     ~Server();
 
 private:

@@ -14,6 +14,10 @@ add_executable(server
         src/server/main.cpp
         src/server/server.cpp
         src/server/ui.cpp
+        src/server/plugin.cpp
+
+        # Plugin Devs: Please have the following line for each of your plugins.
+        # src/server/plugins/[plugin folder name]/[plugin file name].cpp
 )
 
 # Include directories for headers
