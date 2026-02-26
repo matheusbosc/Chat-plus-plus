@@ -11,6 +11,8 @@
 #include <thread>
 #include <functional>
 
+#include "plugin.h"
+
 struct client {
     std::string clientName;
     int clientSocket;
@@ -35,6 +37,8 @@ public:
     void load_plugin();
 
     ~Server();
+
+    std::vector<Plugin> pluginList;
 
 private:
 

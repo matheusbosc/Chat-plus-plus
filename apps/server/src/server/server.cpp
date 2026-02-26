@@ -15,6 +15,8 @@
 #include <json_struct/json_struct.h>
 #include "server.h"
 
+#include "plugin.h"
+
 
 void Server::Init(bool _uiActive) {
     uiActive = _uiActive;
@@ -125,12 +127,16 @@ void Server::client_listener(client &this_client, std::vector<client> &clients) 
 
             returnMsgCode = -1;
         }
-
+        else {
         // Specific Patterns
+
+        for (auto pl: pluginList) {
+            //if (pl.messagePattern.pa)
+        }
         
 
         // If none of the patterns above apply, then return the message
-        else {
+
             std::cout << "ROOM " << obj.room_code << ": " << "OTHER MESSAGE: " << obj.author << ": " << obj.content
                   << std::endl;
 
