@@ -1,5 +1,7 @@
 # Chat++
 
+[![Build Status](https://jenkins.matheusbosc.com/buildStatus/icon?job=Chat%2B%2B+Linux&subject=Chat%2B%2B)](https://jenkins.matheusbosc.com/job/Chat++%20Linux/)
+
 ## What is it?
 Chat++ is a small networked chat application built in C++. This is my first C++ project.
 
